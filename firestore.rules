@@ -1,0 +1,288 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidDateString(val) {
+      return val is string && val.size() == 10 && val.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function isValidTimeString(val) {
+      return val is string && (val == '' || (val.size() == 5 && val.matches('^\\d{2}:\\d{2}$')));
+    }
+
+    function isValidProfile(data, userId) {
+      return data.keys().hasAll(['ownerId', 'displayName', 'photoURL', 'currency', 'categoryEmojis', 'lastLoginAt', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'displayName', 'photoURL', 'currency', 'categoryEmojis', 'lastLoginAt', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.photoURL is string && data.photoURL.size() <= 500
+        && data.currency is string && data.currency.size() >= 1 && data.currency.size() <= 8
+        && data.categoryEmojis is map && data.categoryEmojis.size() <= 20
+        && data.lastLoginAt is timestamp
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateAccount(data, userId) {
+      return data.keys().hasAll(['ownerId', 'email', 'emailVerified', 'providerId', 'lastLoginAt', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'email', 'emailVerified', 'providerId', 'lastLoginAt', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.email is string && data.email.size() <= 254
+        && data.emailVerified is bool
+        && data.providerId is string && data.providerId.size() >= 1 && data.providerId.size() <= 40
+        && data.lastLoginAt is timestamp
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidEvent(data, userId) {
+      return data.keys().hasAll(['ownerId', 'title', 'notes', 'date', 'startTime', 'color', 'completed', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'title', 'notes', 'date', 'startTime', 'color', 'completed', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 140
+        && data.notes is string && data.notes.size() <= 500
+        && isValidDateString(data.date)
+        && isValidTimeString(data.startTime)
+        && data.color is string && data.color in ['cobalt', 'emerald', 'amber', 'rose', 'violet', 'teal', 'slate', 'orange']
+        && data.completed is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidExpense(data, userId) {
+      return data.keys().hasAll(['ownerId', 'category', 'amount', 'note', 'date', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'category', 'amount', 'note', 'date', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.category is string && data.category in ['Food', 'Transportation', 'Health', 'Entertainment', 'Shopping', 'Hangout', 'Family', 'Saving', 'Business', 'Need']
+        && (data.amount is int || data.amount is float) && data.amount > 0 && data.amount <= 100000000
+        && data.note is string && data.note.size() <= 200
+        && isValidDateString(data.date)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidIncome(data, userId) {
+      return data.keys().hasAll(['ownerId', 'source', 'amount', 'note', 'date', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'source', 'amount', 'note', 'date', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.source is string && data.source.size() >= 1 && data.source.size() <= 60
+        && (data.amount is int || data.amount is float) && data.amount > 0 && data.amount <= 100000000
+        && data.note is string && data.note.size() <= 200
+        && isValidDateString(data.date)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBook(data, userId) {
+      return data.keys().hasAll(['ownerId', 'name', 'coverType', 'coverValue', 'noteCount', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'name', 'coverType', 'coverValue', 'noteCount', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.coverType is string && data.coverType in ['preset', 'color', 'custom']
+        && data.coverValue is string && data.coverValue.size() >= 1 && data.coverValue.size() <= 260000
+        && data.noteCount is int && data.noteCount >= 0 && data.noteCount <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidNote(data, userId, bookId) {
+      return data.keys().hasAll(['ownerId', 'bookId', 'title', 'content', 'entryDate', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'bookId', 'title', 'content', 'entryDate', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == userId && isValidId(data.ownerId)
+        && data.bookId is string && data.bookId == bookId && isValidId(data.bookId)
+        && data.title is string && data.title.size() <= 140
+        && data.content is string && data.content.size() <= 50000
+        && isValidDateString(data.entryDate)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidProfile(incoming(), userId)
+        && incoming().lastLoginAt == request.time
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidProfile(incoming(), userId)
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['categoryEmojis', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['currency', 'updatedAt'])
+          || (
+            incoming().lastLoginAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLoginAt', 'updatedAt'])
+          )
+        );
+      allow delete: if false;
+
+      match /private/{docId} {
+        allow get: if isOwner(userId) && isValidId(userId) && docId == 'account';
+        allow list: if false;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && docId == 'account'
+          && isValidPrivateAccount(incoming(), userId)
+          && incoming().lastLoginAt == request.time
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && docId == 'account'
+          && isValidPrivateAccount(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().lastLoginAt == request.time
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'emailVerified', 'providerId', 'lastLoginAt', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /events/{eventId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(eventId);
+        allow list: if isOwner(userId) && resource.data.ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(eventId)
+          && isValidEvent(incoming(), userId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(eventId)
+          && isValidEvent(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && (
+            incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'updatedAt'])
+            || incoming().diff(existing()).affectedKeys().hasOnly(['color', 'updatedAt'])
+            || incoming().diff(existing()).affectedKeys().hasOnly(['title', 'notes', 'date', 'startTime', 'color', 'completed', 'updatedAt'])
+          );
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(eventId);
+      }
+
+      match /expenses/{expenseId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(expenseId);
+        allow list: if isOwner(userId) && resource.data.ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(expenseId)
+          && isValidExpense(incoming(), userId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(expenseId)
+          && isValidExpense(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['category', 'amount', 'note', 'date', 'updatedAt']);
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(expenseId);
+      }
+
+      match /incomes/{incomeId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(incomeId);
+        allow list: if isOwner(userId) && resource.data.ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(incomeId)
+          && isValidIncome(incoming(), userId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(incomeId)
+          && isValidIncome(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['source', 'amount', 'note', 'date', 'updatedAt']);
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(incomeId);
+      }
+
+      match /books/{bookId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(bookId);
+        allow list: if isOwner(userId) && resource.data.ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(bookId)
+          && isValidBook(incoming(), userId)
+          && incoming().noteCount == 0
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(bookId)
+          && isValidBook(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && (
+            incoming().diff(existing()).affectedKeys().hasOnly(['noteCount', 'updatedAt'])
+            || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'coverType', 'coverValue', 'updatedAt'])
+          );
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(bookId);
+
+        match /notes/{noteId} {
+          allow get: if isOwner(userId) && isValidId(userId) && isValidId(bookId) && isValidId(noteId);
+          allow list: if isOwner(userId) && resource.data.ownerId == request.auth.uid;
+          allow create: if isVerifiedOwner(userId)
+            && isValidId(userId)
+            && isValidId(bookId)
+            && isValidId(noteId)
+            && exists(/databases/$(database)/documents/users/$(userId)/books/$(bookId))
+            && isValidNote(incoming(), userId, bookId)
+            && incoming().createdAt == request.time
+            && incoming().updatedAt == request.time;
+          allow update: if isVerifiedOwner(userId)
+            && isValidId(userId)
+            && isValidId(bookId)
+            && isValidId(noteId)
+            && isValidNote(incoming(), userId, bookId)
+            && incoming().ownerId == existing().ownerId
+            && incoming().bookId == existing().bookId
+            && incoming().createdAt == existing().createdAt
+            && incoming().updatedAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'entryDate', 'updatedAt']);
+          allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(bookId) && isValidId(noteId);
+        }
+      }
+    }
+  }
+}

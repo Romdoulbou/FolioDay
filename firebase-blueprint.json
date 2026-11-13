@@ -1,0 +1,312 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User preferences including custom category emojis and currency symbol.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "currency": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "categoryEmojis": {
+          "type": "object"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "displayName", "photoURL", "currency", "categoryEmojis", "lastLoginAt", "createdAt", "updatedAt"]
+    },
+    "UserPrivateAccount": {
+      "title": "UserPrivateAccount",
+      "description": "Isolated private Google account metadata stored on sign-in.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 254
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "providerId": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "email", "emailVerified", "providerId", "lastLoginAt", "createdAt", "updatedAt"]
+    },
+    "CalendarEvent": {
+      "title": "CalendarEvent",
+      "description": "A calendar event that also functions as a checkable to-do item with customizable display color.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "date": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "startTime": {
+          "type": "string",
+          "maxLength": 5
+        },
+        "color": {
+          "type": "string",
+          "enum": ["cobalt", "emerald", "amber", "rose", "violet", "teal", "slate", "orange"]
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "title", "notes", "date", "startTime", "color", "completed", "createdAt", "updatedAt"]
+    },
+    "ExpenseEntry": {
+      "title": "ExpenseEntry",
+      "description": "A daily expense record categorized into one of 10 personal finance categories.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Food", "Transportation", "Health", "Entertainment", "Shopping", "Hangout", "Family", "Saving", "Business", "Need"]
+        },
+        "amount": {
+          "type": "number"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "date": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "category", "amount", "note", "date", "createdAt", "updatedAt"]
+    },
+    "DiaryBook": {
+      "title": "DiaryBook",
+      "description": "A user-created diary notebook with custom name, cover art, and note count.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "coverType": {
+          "type": "string",
+          "enum": ["preset", "color", "custom"]
+        },
+        "coverValue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 260000
+        },
+        "noteCount": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "name", "coverType", "coverValue", "noteCount", "createdAt", "updatedAt"]
+    },
+    "DiaryNote": {
+      "title": "DiaryNote",
+      "description": "An auto-saving diary entry inside a specific diary book.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "bookId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 140
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 50000
+        },
+        "entryDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "bookId", "title", "content", "entryDate", "createdAt", "updatedAt"]
+    },
+    "IncomeEntry": {
+      "title": "IncomeEntry",
+      "description": "A recorded income entry used to track total income and remaining money.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "amount": {
+          "type": "number"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "date": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "source", "amount", "note", "date", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user settings, profile display info, and category emoji preferences"
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": "UserPrivateAccount",
+      "description": "Isolated Google sign-in account metadata (email, provider, verification)"
+    },
+    "/users/{userId}/events/{eventId}": {
+      "schema": "CalendarEvent",
+      "description": "User calendar events and checkable tasks"
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": "ExpenseEntry",
+      "description": "User daily expense records"
+    },
+    "/users/{userId}/incomes/{incomeId}": {
+      "schema": "IncomeEntry",
+      "description": "User income records"
+    },
+    "/users/{userId}/books/{bookId}": {
+      "schema": "DiaryBook",
+      "description": "User diary books"
+    },
+    "/users/{userId}/books/{bookId}/notes/{noteId}": {
+      "schema": "DiaryNote",
+      "description": "Notes belonging to a diary book"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "FolioDay",
+  "description": "Mobile-first personal planner combining a to-do calendar, daily expense tracker with streaks and reports, and auto-saving diary books.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

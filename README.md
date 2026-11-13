@@ -1,11 +1,62 @@
-<div align="center">
+# FolioDay
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Mobile-first personal planner combining a **To-Do Calendar**, **Daily Expense & Income Tracker** (with streaks and Weekly/Monthly/Yearly reports), and **Auto-Saving Diary Books**, synced to Firebase Authentication (Google Sign-In) and Cloud Firestore.
 
-  <h1>Built with AI Studio</h2>
+## Included in This Package
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- `src/` — React 19 + TypeScript + Tailwind CSS v4 source code and bundled diary cover assets
+- `firebase-applet-config.json` — Firebase project configuration (`folioday-20a10`, Firestore DB `ai-studio-1d1b22ae-b618-4372-87cf-14642cdcb2a5`)
+- `firestore.rules` — Owner-verified Firestore security rules
+- `firebase.json` & `.firebaserc` — Ready-to-use Firebase CLI config for Hosting & Firestore rules
+- `.github/workflows/deploy-pages.yml` — Automated GitHub Actions workflow for GitHub Pages (`*.github.io`)
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## Run Locally
 
-</div>
+Requirements: Node.js 20+ and npm.
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Build for Production
+
+```bash
+npm run lint
+npm run build
+```
+
+The production bundle is output to `dist/`.
+
+## Publish to GitHub Pages (`*.github.io`)
+
+1. Create a GitHub repository and push this folder to `main`:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial FolioDay release"
+   git branch -M main
+   git remote add origin https://github.com/<your-username>/<your-repo>.git
+   git push -u origin main
+   ```
+2. In GitHub: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+3. Wait for the **Deploy FolioDay to GitHub Pages** workflow in **Actions** to finish.
+4. In **Firebase Console → `folioday-20a10` → Authentication → Settings → Authorized domains**, add:
+   - `<your-username>.github.io`
+
+## Publish to Firebase Hosting
+
+```bash
+npm install -g firebase-tools
+firebase login
+npm run build
+firebase deploy --only hosting
+```
+
+To deploy updated Firestore rules from this package:
+
+```bash
+firebase deploy --only firestore:rules
+```
